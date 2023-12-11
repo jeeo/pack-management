@@ -1,0 +1,161 @@
+{
+	"info": {
+		"_postman_id": "a776ba8e-01b8-4235-b299-69e0239ae6da",
+		"name": "pack management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3700074"
+	},
+	"item": [
+		{
+			"name": "Pack",
+			"item": [
+				{
+					"name": "Create Package",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 200\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/package",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"package"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Package",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 200\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/package/704906ee-3e30-4d8b-87fd-13140542e5f4",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"package",
+								"704906ee-3e30-4d8b-87fd-13140542e5f4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Package",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/package/704906ee-3e30-4d8b-87fd-13140542e5f4",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"package",
+								"704906ee-3e30-4d8b-87fd-13140542e5f4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Available Packages",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 12\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/package",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"package"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Order",
+			"item": [
+				{
+					"name": "Calculate",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/order/calculate",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"order",
+								"calculate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
