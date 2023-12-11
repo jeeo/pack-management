@@ -4,7 +4,10 @@ This is a simply application which enables us to insert package types and calcul
 
 ## Running
 
-> To Run this project, you will need to have docker and Go 1.21.
+> To Run this project, you will need to have docker and Go 1.21 and to install goose binary:
+```sh
+go install github.com/pressly/goose/v3/cmd/goose@latest
+```
 > For brevity, this Project does not set any DB container volume, ***so each time you stop the database you will need to re-run the migrations***
 
 ### 1 - spin up the database

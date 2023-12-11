@@ -2,13 +2,13 @@
 -- +goose StatementBegin
 CREATE TABLE public.pack (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    amount integer NOT NULL,
+    amount integer NOT NULL UNIQUE,
     created_at timestamp DEFAULT now(),
     updated_at timestamp
 );
 
 INSERT INTO public.pack(amount) VALUES 
-    (200), 
+    (250), 
     (500), 
     (1000),
     (2000), 

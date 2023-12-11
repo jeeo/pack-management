@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jeeo/pack-management/internal/config"
+	"github.com/rs/cors"
 )
 
 type Server struct {
@@ -31,9 +32,11 @@ func NewRestServer(config config.ServerConfig, handlers ...ServerHandler) *Serve
 		handler.Configure(mux)
 	}
 
+	corsHandler := cors.AllowAll().Handler(mux)
+
 	server.httpServer = &http.Server{
 		Addr:         address,
-		Handler:      mux,
+		Handler:      corsHandler,
 		WriteTimeout: server.config.WriteTimeout,
 		ReadTimeout:  server.config.ReadTimeout,
 	}

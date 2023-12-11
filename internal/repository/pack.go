@@ -43,7 +43,7 @@ func toPackDomainModel(pack packDataModel) model.Pack {
 
 func (p PackRepository) Create(ctx context.Context, pack model.Pack) error {
 	packData := toPackDataModel(pack)
-	insertQuery := "INSERT INTO pack (amount) VALUES ($1)"
+	insertQuery := "INSERT INTO pack (amount) VALUES ($1) ON CONFLICT DO NOTHING"
 
 	_, err := p.db.ExecContext(ctx, insertQuery, packData.Amount)
 	return err
