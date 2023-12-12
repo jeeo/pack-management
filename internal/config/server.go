@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/Netflix/go-env"
@@ -25,12 +26,19 @@ type ServerConfig struct {
 }
 
 func LoadConfig() ServerConfig {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err)
+	appEnv := os.Getenv("APP_ENV")
+	if appEnv == "" {
+		appEnv = "DEV"
+	}
+
+	if appEnv == "DEV" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	config := ServerConfig{}
-	_, err = env.UnmarshalFromEnviron(&config)
+	_, err := env.UnmarshalFromEnviron(&config)
 	if err != nil {
 		log.Fatal(err)
 	}

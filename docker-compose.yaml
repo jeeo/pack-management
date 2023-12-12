@@ -8,5 +8,39 @@ services:
       POSTGRES_DB: postgres
     ports: 
       - 5432:5432
-
-
+    networks:
+      - internal
+  api:
+    build:
+     dockerfile: ./docker/api/Dockerfile
+     context: .
+    restart: always
+    ports: 
+      - "8080:8080"
+    environment:
+      APP_ENV: PROD
+      WRITE_TIMEOUT: 10s
+      READ_TIMEOUT: 10s
+      PORT: 8080
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: postgres
+    depends_on: 
+      - db
+      - migrator
+    networks:
+      - internal
+  migrator:
+    build:
+     dockerfile: ./docker/migrator/Dockerfile
+     context: .
+    restart: always
+    depends_on: 
+      - db
+    networks:
+      - internal
+networks:
+  internal: 
+    driver: bridge
