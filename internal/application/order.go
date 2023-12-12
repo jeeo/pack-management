@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/jeeo/pack-management/internal/model"
 )
@@ -52,40 +53,43 @@ func (p OrderApplication) buildOrder(orderQuantity int, packs []model.Pack) mode
 			return order
 		}
 		packsQuocients := calculatePacksQuocients(remainingQuantity, packs)
-		filteredQuocients := filterQuocientsLessThanOne(packsQuocients)
-		minimumQuocient, packIndex := minQuocient(filteredQuocients)
-		if minimumQuocient > 1 {
-			packAmount := packs[packIndex].Amount
-			packQuantity := int(minimumQuocient)
-			order.Packs[packAmount] = int(packQuantity)
-			remainingQuantity -= packAmount * packQuantity
-		} else if minimumQuocient == 1 || minimumQuocient < 1 && remainingQuantity < packs[packIndex].Amount {
-			order.Packs[packs[packIndex].Amount] = 1
-			return order
+		var quocient float32
+		var packIndex int
+		// if there is any quocient less than 1,
+		// we should try to find the best local pack
+		if isThereAnyQuocientLessThanOne(packsQuocients) {
+			quocient, packIndex = bestLocalPack(packs, remainingQuantity)
+		} else {
+			// otherwise, we should find the best quocient (which means saving more packs)
+			quocient, packIndex = minQuocient(packsQuocients)
 		}
+		packAmount := packs[packIndex].Amount
+		packQuantity := int(quocient)
+		if packQuantity == 0 {
+			packQuantity = 1
+		}
+		order.Packs[packAmount] += packQuantity
+		remainingQuantity -= packAmount * packQuantity
 	}
 
 	return order
 }
 
+// optimizeOrder tries to optimize the order by replacing the packs with the bigger ones
 func (p OrderApplication) optimizeOrder(packs []model.Pack, order *model.Order) {
 	packsMap := model.PacksToMap(packs)
-	shouldRecheck := true
-	for shouldRecheck {
-		for packAmount, packQuantity := range order.Packs {
-			if packQuantity > 1 {
-				if _, ok := packsMap[packAmount*packQuantity]; ok {
+	for packAmount, packQuantity := range order.Packs {
+		for packQuantity > 1 {
+			if _, ok := packsMap[packAmount*packQuantity]; ok {
+				order.Packs[packAmount*packQuantity]++
+				if order.Packs[packAmount]-packQuantity <= 0 {
 					delete(order.Packs, packAmount)
-					if _, ok := order.Packs[packAmount*packQuantity]; !ok {
-						order.Packs[packAmount*packQuantity] = 1
-					} else {
-						order.Packs[packAmount*packQuantity]++
-						shouldRecheck = true
-						break
-					}
+				} else {
+					order.Packs[packAmount] -= packQuantity
 				}
+				break
 			}
-			shouldRecheck = false
+			packQuantity--
 		}
 	}
 }
@@ -112,12 +116,38 @@ func minQuocient(quocients []float32) (float32, int) {
 	return min, index
 }
 
-func filterQuocientsLessThanOne(quocients []float32) []float32 {
-	result := make([]float32, 0)
+func isThereAnyQuocientLessThanOne(quocients []float32) bool {
 	for _, quocient := range quocients {
-		if quocient >= 1 {
-			result = append(result, quocient)
+		if quocient < 1 {
+			return true
 		}
 	}
-	return result
+	return false
+}
+
+func bestLocalPack(packs []model.Pack, orderQuantity int) (float32, int) {
+	var bestIndex int
+	var bestDiff int = math.MaxInt
+	var resultQuantity int
+	for i, pack := range packs {
+		quocient := float32(orderQuantity) / float32(pack.Amount)
+		if quocient < 1 {
+			diff := pack.Amount - orderQuantity
+			if bestDiff > diff {
+				bestDiff = diff
+				bestIndex = i
+				resultQuantity = 1
+			}
+		} else {
+			quantity := int(quocient)
+			diff := orderQuantity - (pack.Amount * quantity)
+			if bestDiff > diff {
+				bestDiff = diff
+				bestIndex = i
+				resultQuantity = quantity
+			}
+		}
+	}
+
+	return float32(resultQuantity), bestIndex
 }

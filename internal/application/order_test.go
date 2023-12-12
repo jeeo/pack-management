@@ -130,3 +130,41 @@ func TestCalculate(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculate2(t *testing.T) {
+	// Arrange
+	packRepoMock := mocks.PackRepository{}
+	app := application.NewOrderApplication(&packRepoMock)
+	testCases := []struct {
+		OrderQuantity int
+		Expected      []model.OrderPack
+	}{
+		{
+			OrderQuantity: 500000,
+			Expected: []model.OrderPack{
+				{
+					Pack:     model.Pack{Amount: 53},
+					Quantity: 9434,
+				},
+			},
+		},
+	}
+	packRepoMock.On("FindAll", mock.Anything).Return([]model.Pack{
+		{Amount: 23},
+		{Amount: 31},
+		{Amount: 53},
+	}, nil)
+
+	// Act + Assert
+	for _, testCase := range testCases {
+		t.Run(fmt.Sprintf("OrderQuantity: %d", testCase.OrderQuantity), func(t *testing.T) {
+
+			resultOrder, err := app.CalculateOrderPack(context.TODO(), testCase.OrderQuantity)
+			if err != nil {
+				t.Error(err)
+			}
+
+			assert.ElementsMatch(t, resultOrder, testCase.Expected)
+		})
+	}
+}
