@@ -78,18 +78,25 @@ func (p OrderApplication) buildOrder(orderQuantity int, packs []model.Pack) mode
 // optimizeOrder tries to optimize the order by replacing the packs with the bigger ones
 func (p OrderApplication) optimizeOrder(packs []model.Pack, order *model.Order) {
 	packsMap := model.PacksToMap(packs)
-	for packAmount, packQuantity := range order.Packs {
-		for packQuantity > 1 {
-			if _, ok := packsMap[packAmount*packQuantity]; ok {
-				order.Packs[packAmount*packQuantity]++
-				if order.Packs[packAmount]-packQuantity <= 0 {
-					delete(order.Packs, packAmount)
-				} else {
-					order.Packs[packAmount] -= packQuantity
+	shouldRecheck := true
+	for shouldRecheck {
+		shouldRecheck = false
+		for packAmount, packQuantity := range order.Packs {
+			for packQuantity > 1 {
+				if _, ok := packsMap[packAmount*packQuantity]; ok {
+					order.Packs[packAmount*packQuantity]++
+					if order.Packs[packAmount]-packQuantity <= 0 {
+						delete(order.Packs, packAmount)
+					} else {
+						order.Packs[packAmount] -= packQuantity
+						if order.Packs[packAmount] > 1 {
+							shouldRecheck = true
+						}
+					}
+					break
 				}
-				break
+				packQuantity--
 			}
-			packQuantity--
 		}
 	}
 }

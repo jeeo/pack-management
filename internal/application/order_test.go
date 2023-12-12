@@ -138,6 +138,56 @@ func TestCalculate(t *testing.T) {
 				},
 			},
 		},
+		{
+			OrderQuantity: 270,
+			StoredPacks: []model.Pack{
+				{Amount: 5},
+				{Amount: 100},
+				{Amount: 500},
+			},
+			Expected: []model.OrderPack{
+				{
+					Pack:     model.Pack{Amount: 5},
+					Quantity: 14,
+				},
+				{
+					Pack:     model.Pack{Amount: 100},
+					Quantity: 2,
+				},
+			},
+		},
+		{
+			OrderQuantity: 300,
+			StoredPacks: []model.Pack{
+				{Amount: 5},
+				{Amount: 100},
+				{Amount: 500},
+			},
+			Expected: []model.OrderPack{
+				{
+					Pack:     model.Pack{Amount: 100},
+					Quantity: 3,
+				},
+			},
+		},
+		{
+			OrderQuantity: 301,
+			StoredPacks: []model.Pack{
+				{Amount: 5},
+				{Amount: 100},
+				{Amount: 500},
+			},
+			Expected: []model.OrderPack{
+				{
+					Pack:     model.Pack{Amount: 5},
+					Quantity: 1,
+				},
+				{
+					Pack:     model.Pack{Amount: 100},
+					Quantity: 3,
+				},
+			},
+		},
 	}
 
 	// Act + Assert
