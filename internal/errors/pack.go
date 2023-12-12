@@ -8,7 +8,7 @@ type ErrPackNotFound struct {
 }
 
 func (e ErrPackNotFound) Error() string {
-	return fmt.Sprintf("pack with ID %s not found: %w", e.packId, e.BaseErr)
+	return fmt.Sprintf("pack with ID %s not found: %s", e.packId, e.BaseErr.Error())
 }
 
 func NewErrPackNotFound(baseErr error, packId string) ErrPackNotFound {
