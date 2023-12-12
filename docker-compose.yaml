@@ -29,14 +29,12 @@ services:
       DB_NAME: postgres
     depends_on: 
       - db
-      - migrator
     networks:
       - internal
   migrator:
     build:
      dockerfile: ./docker/migrator/Dockerfile
      context: .
-    restart: always
     depends_on: 
       - db
     networks:
