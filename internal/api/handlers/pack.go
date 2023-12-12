@@ -115,13 +115,17 @@ func (p PackHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	if !IsValidUUID(packId) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid pack id"))
+		if _, err := w.Write([]byte("invalid pack id")); err != nil {
+			log.Println(err)
+		}
 		return
 	}
 
 	if request.Amount <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid amount"))
+		if _, err := w.Write([]byte("invalid amount")); err != nil {
+			log.Println(err)
+		}
 		return
 	}
 
@@ -146,7 +150,9 @@ func (p PackHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if !IsValidUUID(packId) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid pack id"))
+		if _, err := w.Write([]byte("invalid pack id")); err != nil {
+			log.Println(err)
+		}
 		return
 	}
 
