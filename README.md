@@ -4,37 +4,30 @@ This is a simply application which enables us to insert package types and calcul
 
 ## Running
 
-> To Run this project, you will need to have docker and Go 1.21 and to install goose binary:
-```sh
-go install github.com/pressly/goose/v3/cmd/goose@latest
-```
+### Dependencies
+
+- Docker
+
 > For brevity, this Project does not set any DB container volume, ***so each time you stop the database you will need to re-run the migrations***
 
-### 1 - spin up the database
+Just run:
 
 ```sh
-make db-up
+docker compose up
 ```
 
-### 2 - run the migrations
+under the hoods, it will spin up 3 containers.
+1 - Database
+2 - Migrator (short lived)
+3 - API service
 
-```sh
-make migration-up
-```
-
-### 3 - run the api
-
-```sh
-make api
-```
+> the goose (migrator) image it's not optmized, so it will take some time to download all the dependencies
 
 ## Trying out
 
 There's a JSON file under the `/postman` directory with the collection containing all the requests
 
 ## Testing
-
-This project has a single unit test covering the core calculation, you can run it using:
 
 ```sh
 make test
