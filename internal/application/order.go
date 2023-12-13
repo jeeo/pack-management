@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"errors"
-	"math"
 
 	"github.com/jeeo/pack-management/internal/model"
 )
@@ -40,39 +39,48 @@ func (p OrderApplication) CalculateOrderPack(ctx context.Context, orderQuantity 
 
 func (p OrderApplication) buildOrder(orderQuantity int, packs []model.Pack) model.Order {
 	order := model.MakeOrder(orderQuantity, nil)
-	remainingQuantity := orderQuantity
+	calcTable := make([]int, orderQuantity+1)
 
-	for remainingQuantity > 0 {
-		if remainingQuantity < packs[0].Amount {
-			if _, ok := order.Packs[packs[0].Amount]; !ok {
-				order.Packs[packs[0].Amount] = 1
-			} else {
-				order.Packs[packs[0].Amount]++
-			}
-
-			return order
-		}
-		packsQuocients := calculatePacksQuocients(remainingQuantity, packs)
-		var quocient float32
-		var packIndex int
-		// if there is any quocient less than 1,
-		// we should try to find the best local pack
-		if isThereAnyQuocientLessThanOne(packsQuocients) {
-			quocient, packIndex = bestLocalPack(packs, remainingQuantity)
-		} else {
-			// otherwise, we should find the best quocient (which means saving more packs)
-			quocient, packIndex = minQuocient(packsQuocients)
-		}
-		packAmount := packs[packIndex].Amount
-		packQuantity := int(quocient)
-		if packQuantity == 0 {
-			packQuantity = 1
-		}
-		order.Packs[packAmount] += packQuantity
-		remainingQuantity -= packAmount * packQuantity
+	if orderQuantity < packs[0].Amount {
+		order.Packs = map[int]int{packs[0].Amount: 1}
+		return order
 	}
 
+	for i := range calcTable {
+		calcTable[i] = orderQuantity + 1
+	}
+	calcTable[0] = 0
+
+	for _, pack := range packs {
+		for i := pack.Amount; i <= orderQuantity; i++ {
+			calcTable[i] = min(calcTable[i], calcTable[i-pack.Amount]+1)
+		}
+	}
+
+	remainingQuantity := orderQuantity
+	if calcTable[orderQuantity] > orderQuantity {
+		for remainingQuantity > 0 && calcTable[remainingQuantity] > orderQuantity {
+			order.Packs[packs[0].Amount]++
+			remainingQuantity -= packs[0].Amount
+		}
+	}
+	for remainingQuantity > 0 {
+		for _, pack := range packs {
+			if pack.Amount <= remainingQuantity && calcTable[remainingQuantity] == calcTable[remainingQuantity-pack.Amount]+1 {
+				order.Packs[pack.Amount]++
+				remainingQuantity -= pack.Amount
+				break
+			}
+		}
+	}
 	return order
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // optimizeOrder tries to optimize the order by replacing the packs with the bigger ones
@@ -94,6 +102,28 @@ func (p OrderApplication) optimizeOrder(packs []model.Pack, order *model.Order) 
 						}
 					}
 					break
+				} else {
+					bestPackAmount := 0
+					sum := sumPackMap(order.Packs)
+					for _, pack := range packs {
+						if pack.Amount == packAmount {
+							continue
+						}
+						if pack.Amount < packAmount*packQuantity && pack.Amount > bestPackAmount && pack.Amount < sum && pack.Amount >= order.Quantity {
+							bestPackAmount = pack.Amount
+						}
+					}
+					if bestPackAmount != 0 {
+						order.Packs[bestPackAmount]++
+						order.Packs[packAmount] -= packQuantity
+						if order.Packs[packAmount] == 0 {
+							delete(order.Packs, packAmount)
+						}
+						if order.Packs[packAmount] > 1 {
+							shouldRecheck = true
+						}
+						break
+					}
 				}
 				packQuantity--
 			}
@@ -101,60 +131,10 @@ func (p OrderApplication) optimizeOrder(packs []model.Pack, order *model.Order) 
 	}
 }
 
-func calculatePacksQuocients(quantity int, packs []model.Pack) []float32 {
-	result := make([]float32, len(packs))
-
-	for i, pack := range packs {
-		result[i] = float32(quantity) / float32(pack.Amount)
+func sumPackMap(packs map[int]int) int {
+	sum := 0
+	for packAmount, packQuantity := range packs {
+		sum += packAmount * packQuantity
 	}
-
-	return result
-}
-
-func minQuocient(quocients []float32) (float32, int) {
-	min := quocients[0]
-	var index int
-	for i, quocient := range quocients {
-		if quocient < min {
-			min = quocient
-			index = i
-		}
-	}
-	return min, index
-}
-
-func isThereAnyQuocientLessThanOne(quocients []float32) bool {
-	for _, quocient := range quocients {
-		if quocient < 1 {
-			return true
-		}
-	}
-	return false
-}
-
-func bestLocalPack(packs []model.Pack, orderQuantity int) (float32, int) {
-	var bestIndex int
-	var bestDiff int = math.MaxInt
-	var resultQuantity int
-	for i, pack := range packs {
-		quocient := float32(orderQuantity) / float32(pack.Amount)
-		if quocient < 1 {
-			diff := pack.Amount - orderQuantity
-			if bestDiff > diff {
-				bestDiff = diff
-				bestIndex = i
-				resultQuantity = 1
-			}
-		} else {
-			quantity := int(quocient)
-			diff := orderQuantity - (pack.Amount * quantity)
-			if bestDiff > diff {
-				bestDiff = diff
-				bestIndex = i
-				resultQuantity = quantity
-			}
-		}
-	}
-
-	return float32(resultQuantity), bestIndex
+	return sum
 }

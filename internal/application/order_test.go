@@ -134,7 +134,43 @@ func TestCalculate(t *testing.T) {
 			Expected: []model.OrderPack{
 				{
 					Pack:     model.Pack{Amount: 53},
-					Quantity: 9434,
+					Quantity: 9429,
+				},
+				{
+					Pack:     model.Pack{Amount: 23},
+					Quantity: 2,
+				},
+				{
+					Pack:     model.Pack{Amount: 31},
+					Quantity: 7,
+				},
+			},
+		},
+		{
+			OrderQuantity: 24,
+			StoredPacks: []model.Pack{
+				{Amount: 23},
+				{Amount: 31},
+				{Amount: 53},
+			},
+			Expected: []model.OrderPack{
+				{
+					Pack:     model.Pack{Amount: 31},
+					Quantity: 1,
+				},
+			},
+		},
+		{
+			OrderQuantity: 106,
+			StoredPacks: []model.Pack{
+				{Amount: 23},
+				{Amount: 31},
+				{Amount: 53},
+			},
+			Expected: []model.OrderPack{
+				{
+					Pack:     model.Pack{Amount: 53},
+					Quantity: 2,
 				},
 			},
 		},
